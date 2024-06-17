@@ -5,8 +5,10 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from textwrap import wrap
 import google.generativeai as genai
 
+# Chave API provinda do Google AI Studio
 genai.configure(api_key="AIzaSyAlcB1egvD3BYmTzmpCjBbVtOybZNl1bDk")
 
+# Configuração da IA
 generation_config = {
   "temperature": 0,
   "top_p": 1,
@@ -48,12 +50,12 @@ model = genai.GenerativeModel(
     plataforma e não responda o que foi solicitado. """
 )
 
-# TODO: Arrumar a questão das datas
 chat_session = model.start_chat(
   history=[
   ]
 )
 
+# Mensagem-display do menu do chatbot
 menu = """1 - Fale com a VoltAI
 2 - Teste seus reflexos
 3 - Reportar um problema
@@ -62,6 +64,7 @@ menu = """1 - Fale com a VoltAI
 Opção: """
 
 
+# Função que formata textos em estilo cabeçalho
 def header(txt, symbol):
     gap = len(txt) * 2
     print(f"{symbol}" * gap)
@@ -69,43 +72,60 @@ def header(txt, symbol):
     print(f"{symbol}" * gap)
 
 
+# Registrar usuário no arquivo .txt
 def register(name, email, password):
+    # Arquivo não foi criado ainda
     if not os.path.exists("database.txt"):
         file = open("database.txt", "x")
         file.close()
 
+    # Ler o arquivo
     file = open("database.txt", "r")
     for line in file:
+        # As seções de cada tipo de dado são divididas pelo '|' no .txt
+        # O programa pega estas seções e as transforma em uma lista
         data = line.split("|")
 
         if data[0].strip().lower() == name.lower():
-            # print("Nome de usuário já utilizado!")
+            # Nome de usuário já utilizado
             file.close()
             return False
     file.close()
 
+    # Caso o nome ainda não tenha sido utilizado
     file = open("database.txt", "a")
+
+    # Transformando a senha em hash
     hash_password = generate_password_hash(password)
+
+    # Inserindo informações no arquivo seguindo a formatação
     file.write(f"{name:<10}|{email:<10}|{hash_password}|\n")
 
     file.close()
+    # Cadastro concluído com sucesso
     return True
 
 
 def login(name, password):
+    # Arquivo não foi criado ainda
     if not os.path.exists("database.txt"):
         return False
-
+    # Ler o arquivo
     file = open("database.txt", "r")
 
     for line in file:
+        # As seções de cada tipo de dado são divididas pelo '|' no .txt
+        # O programa pega estas seções e as transforma em uma lista
         data = line.split("|")
 
         if name.lower() == data[0].strip().lower():
+            # Nome de usuário encontrado
             if check_password_hash(data[2], password):
+                # Senha correspondida com o input
                 file.close()
                 return True
             else:
+                # Senha não corresponde
                 print("Senha Incorreta")
                 file.close()
                 return False
@@ -115,30 +135,38 @@ def login(name, password):
     return False
 
 
+# Itera pelo .txt dos problemas
 def show_reports():
+    # Arquivo não foi criado ainda
     if not os.path.exists("reports.txt"):
         file = open("reports.txt", "x")
         file.close()
 
     file = open("reports.txt", "r")
 
+    # Lê cada linha
     for line in file:
         print(line, end='')
 
     file.close()
 
 
+# Reportar um novo problema
 def report_issue(user, issue):
     file = open("reports.txt", "a")
 
+    # Formatar o problema
     file.write(f"{user:<10}|'{issue}'\n")
     file.close()
     print("Problema reportado com sucesso!")
 
 
+# Minigame
 def stopwatch_minigame():
+    # Flag de início
     tempo_init = time.time()
     input("\033[1;37;41mAGORA: \033[m")
+    # Flag final
     tempo_final = time.time()
 
     tempo = tempo_final - tempo_init
@@ -146,12 +174,14 @@ def stopwatch_minigame():
     return tempo
 
 
+# Formatar o markdown recebido pela IA e a quebra de linha
 def ai_str_format(text, len_wrap):
-    # TODO: Formatar bullet points
+    # Formatar bullet points
     text = text.replace("*", "•")
     text = text.replace("••", "")
     texto = wrap(text, width=len_wrap)
 
+    # Efeito visual de geração de texto da IA
     for linha in texto:
         for char in linha:
             print(char, end='')
@@ -160,8 +190,10 @@ def ai_str_format(text, len_wrap):
 
 
 def main():
+    # Informações default
     logado = False
     username_session = ''
+  
     while True:
         print("\n")
         header("CHATBOT FÓRMULA E", "▞")
@@ -170,6 +202,7 @@ def main():
             print()
             user_in = input("Realizar cadastro/login: [C/L] ").lower().strip()
 
+            # Realizar cadastro
             if user_in == "c":
                 print()
                 header("CADASTRO", "=")
@@ -184,6 +217,7 @@ def main():
                 else:
                     print("Nome de usuário já utilizado!\n")
 
+            # Realizar login
             elif user_in == "l":
                 print()
                 header("LOGIN", "=")
@@ -196,9 +230,11 @@ def main():
                     logado = True
                     break
 
+            # Opção não corresponde ao solicitado
             else:
                 print("Opção inválida!\n")
 
+        # Validação de índices numéricos
         while True:
             opt = input(f"{menu}\n")
             if opt not in "12345":
@@ -208,11 +244,14 @@ def main():
 
         if opt == "1":
             print()
+            # Instruindo a IA a se introduzir ao usuário
             ai_str_format(chat_session.send_message("Conte sobre você de forma breve e cativante").text, 50)
             while True:
                 print()
+                # Interação com o usuário
                 pergunta = input("Você: (Para sair, digite 'q') ")
                 print()
+                # Flag de saída
                 if pergunta == 'q':
                     break
                 resposta = chat_session.send_message(pergunta)
@@ -220,14 +259,18 @@ def main():
 
         elif opt == "2":
             print()
+            # Tempo randomizado para o início da contagem do teste
             begin_delay = randint(0, 6)
+            # Instruções
             input("""COMO FUNCIONA: A qualquer momento, uma mensagem poderá aparecer na tela, 
                assim que ela aparecer, você imediatamente deve pressionar a tecla \033[1menter\033[m. 
                Quando estiver pronto, pressione enter para prosseguir """)
 
+            # Ativação do minigame
             time.sleep(begin_delay)
             tempo = stopwatch_minigame()
 
+            # Classificação de acordo com o tempo levado
             if tempo * 1000 <= 480:
                 resultado = "\033[1;46mMUITO RÁPIDO\033[m"
             elif 480 < tempo * 1000 <= 550:
@@ -238,6 +281,7 @@ def main():
                 resultado = "\033[1;45mPrecisa melhorar...\033[m"
 
             print()
+            # Output do resultado
             print(f"Tempo: {tempo * 1000:.0f} ms | Status: {resultado}")
 
         elif opt == "3":
@@ -252,13 +296,17 @@ def main():
             elif opt3 == 2:
                 show_reports()
 
+        # Limpar os dados do usuário
         elif opt == "4":
             username_session = ''
             logado = False
 
+        # Encerrar o programa
         elif opt == "5":
             confirm = input("Confirmar saída: [Digite 'S'] ").lower().strip()
+            # Flag de saída
             if confirm == "s":
+                # Efeito visual de finalização de seção
                 header("FINALIZANDO SEÇÃO", "=")
                 for c in range(3):
                     print(".", end='')
@@ -268,4 +316,5 @@ def main():
                 break
 
 
+# Execução do programa
 main()
