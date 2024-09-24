@@ -4,9 +4,16 @@ import time
 from werkzeug.security import check_password_hash, generate_password_hash
 from textwrap import wrap
 import google.generativeai as genai
+from dotenv import load_dotenv
+
+# Carrega as variáveis de ambiente
+load_dotenv()
+
+# Chave API da Gemini
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Chave API provinda do Google AI Studio
-genai.configure(api_key="AIzaSyAlcB1egvD3BYmTzmpCjBbVtOybZNl1bDk")
+genai.configure(api_key=GEMINI_API_KEY)
 
 # Configuração da IA
 generation_config = {
@@ -234,86 +241,82 @@ def main():
             else:
                 print("Opção inválida!\n")
 
-        # Validação de índices numéricos
-        while True:
-            opt = input(f"{menu}\n")
-            if opt not in "12345":
-                print("Opção inválida! Tente novamente.")
-                continue
-            break
-
-        if opt == "1":
-            print()
-            # Instruindo a IA a se introduzir ao usuário
-            ai_str_format(chat_session.send_message("Conte sobre você de forma breve e cativante").text, 50)
-            while True:
+        match input(f"{menu}\n"):
+            case "1":
                 print()
-                # Interação com o usuário
-                pergunta = input("Você: (Para sair, digite 'q') ")
+                # Instruindo a IA a se introduzir ao usuário
+                ai_str_format(chat_session.send_message("Conte sobre você de forma breve e cativante").text, 50)
+                while True:
+                    print()
+                    # Interação com o usuário
+                    pergunta = input("Você: (Para sair, digite 'q') ")
+                    print()
+                    # Flag de saída
+                    if pergunta == 'q':
+                        break
+                    resposta = chat_session.send_message(pergunta)
+                    ai_str_format(resposta.text, 50)
+    
+            case "2":
                 print()
+                # Tempo randomizado para o início da contagem do teste
+                begin_delay = randint(0, 6)
+                # Instruções
+                input("""COMO FUNCIONA: A qualquer momento, uma mensagem poderá aparecer na tela, 
+                   assim que ela aparecer, você imediatamente deve pressionar a tecla \033[1menter\033[m. 
+                   Quando estiver pronto, pressione enter para prosseguir """)
+    
+                # Ativação do minigame
+                time.sleep(begin_delay)
+                tempo = stopwatch_minigame()
+    
+                # Classificação de acordo com o tempo levado
+                if tempo * 1000 <= 480:
+                    resultado = "\033[1;46mMUITO RÁPIDO\033[m"
+                elif 480 < tempo * 1000 <= 550:
+                    resultado = "\033[1;42mRÁPIDO\033[m"
+                elif 550 < tempo * 1000 <= 650:
+                    resultado = "\033[1;43mBOM\033[m"
+                else:
+                    resultado = "\033[1;45mPrecisa melhorar...\033[m"
+    
+                print()
+                # Output do resultado
+                print(f"Tempo: {tempo * 1000:.0f} ms | Status: {resultado}")
+    
+            case "3":
+                print()
+                opt3 = int(input("""    1 - Reportar um novo problema
+        2 - Consultar problemas reportados
+        Opção: """))
+                print()
+                if opt3 == 1:
+                    problema = input("Problema a reportar: ")
+                    report_issue(username_session, problema)
+                elif opt3 == 2:
+                    show_reports()
+    
+            # Limpar os dados do usuário
+            case "4":
+                username_session = ''
+                logado = False
+    
+            # Encerrar o programa
+            case "5":
+                confirm = input("Confirmar saída: [Digite 'S'] ").lower().strip()
                 # Flag de saída
-                if pergunta == 'q':
+                if confirm == "s":
+                    # Efeito visual de finalização de seção
+                    header("FINALIZANDO SEÇÃO", "=")
+                    for c in range(3):
+                        print(".", end='')
+                        time.sleep(1)
+                    print()
+                    header("CHAT FINALIZADO", "▞")
                     break
-                resposta = chat_session.send_message(pergunta)
-                ai_str_format(resposta.text, 50)
 
-        elif opt == "2":
-            print()
-            # Tempo randomizado para o início da contagem do teste
-            begin_delay = randint(0, 6)
-            # Instruções
-            input("""COMO FUNCIONA: A qualquer momento, uma mensagem poderá aparecer na tela, 
-               assim que ela aparecer, você imediatamente deve pressionar a tecla \033[1menter\033[m. 
-               Quando estiver pronto, pressione enter para prosseguir """)
-
-            # Ativação do minigame
-            time.sleep(begin_delay)
-            tempo = stopwatch_minigame()
-
-            # Classificação de acordo com o tempo levado
-            if tempo * 1000 <= 480:
-                resultado = "\033[1;46mMUITO RÁPIDO\033[m"
-            elif 480 < tempo * 1000 <= 550:
-                resultado = "\033[1;42mRÁPIDO\033[m"
-            elif 550 < tempo * 1000 <= 650:
-                resultado = "\033[1;43mBOM\033[m"
-            else:
-                resultado = "\033[1;45mPrecisa melhorar...\033[m"
-
-            print()
-            # Output do resultado
-            print(f"Tempo: {tempo * 1000:.0f} ms | Status: {resultado}")
-
-        elif opt == "3":
-            print()
-            opt3 = int(input("""    1 - Reportar um novo problema
-    2 - Consultar problemas reportados
-    Opção: """))
-            print()
-            if opt3 == 1:
-                problema = input("Problema a reportar: ")
-                report_issue(username_session, problema)
-            elif opt3 == 2:
-                show_reports()
-
-        # Limpar os dados do usuário
-        elif opt == "4":
-            username_session = ''
-            logado = False
-
-        # Encerrar o programa
-        elif opt == "5":
-            confirm = input("Confirmar saída: [Digite 'S'] ").lower().strip()
-            # Flag de saída
-            if confirm == "s":
-                # Efeito visual de finalização de seção
-                header("FINALIZANDO SEÇÃO", "=")
-                for c in range(3):
-                    print(".", end='')
-                    time.sleep(1)
-                print()
-                header("CHAT FINALIZADO", "▞")
-                break
+            case _:
+                print("Opção inválida! Tente novamente.")
 
 
 # Execução do programa
