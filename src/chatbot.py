@@ -218,9 +218,9 @@ def main():
                 senha = input("Senha: ")
 
                 if register(nome, email, senha):
-                    print("Registro realizado com sucesso!\n")
                     username_session = nome
                     logado = True
+                    print("Registro realizado com sucesso!\n")
                 else:
                     print("Nome de usuário já utilizado!\n")
 
@@ -232,16 +232,16 @@ def main():
                 senha = input("Senha: ")
 
                 if login(nome, senha):
-                    print(f"Olá {nome.capitalize()}, você logou com sucesso!\n")
                     username_session = nome
                     logado = True
+                    print(f"Olá {nome.capitalize()}, você logou com sucesso!\n")
                     break
 
             # Opção não corresponde ao solicitado
             else:
                 print("Opção inválida!\n")
-
-        match input(f"{menu}\n"):
+        opt = input(f"{menu}\n")
+        match opt:
             case "1":
                 print()
                 # Instruindo a IA a se introduzir ao usuário
