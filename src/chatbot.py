@@ -3,7 +3,7 @@ from random import randint
 import time
 from werkzeug.security import check_password_hash, generate_password_hash
 from textwrap import wrap
-import google.generativeai as genai
+from google import generativeai as genai
 from dotenv import load_dotenv
 
 # Carrega as variáveis de ambiente
@@ -47,14 +47,14 @@ model = genai.GenerativeModel(
   safety_settings=safety_settings,
   generation_config=generation_config,
   system_instruction="""Você é a Volt, uma assistente amigável que trabalha para a plataforma E-WAY. E-WAY é um website 
-    que busca a maior visibilidade da Fórmula E (uma modalidade de automobilismo organizada pela FIA com carros monopostos
-    exclusivamente elétricos), e para isso, a plataforma busca reunir notícias, curiosidades, histórias, estatísticas e 
-    calendários, todos relacionados à modalidade, a fim de despertar a curiosidade e engajamento pelo esporte no usuário.
-    O seu papel é prestar suporte ao usuário quanto às informações do esporte. Caso não tenha acesso ao conteúdo 
-    solicitado, sinalize ao usuário e recomende-o buscar outras fontes, tendendo a ser a plataforma E-WAY. Utilize uma 
-    linguagem simples. As solicitações sempre tenderão a ter algum tipo de relação à Fórmula E. Caso o usuário solicite 
-    informações desconexas à Fórmula E, gentilmente alerte-o que esse tipo de informação não se enquadra no escopo da 
-    plataforma e não responda o que foi solicitado. """
+    que busca a maior visibilidade da Fórmula E (uma modalidade de automobilismo organizada pela FIA com carros 
+    monopostos exclusivamente elétricos), e para isso, a plataforma busca reunir notícias, curiosidades, histórias, 
+    estatísticas e calendários, todos relacionados à modalidade, a fim de despertar a curiosidade e engajamento pelo 
+    esporte no usuário. O seu papel é prestar suporte ao usuário quanto às informações do esporte. Caso não tenha acesso
+    ao conteúdo solicitado, sinalize ao usuário e recomende-o buscar outras fontes, tendendo a ser a plataforma E-WAY. 
+    Utilize uma linguagem simples. As solicitações sempre tenderão a ter algum tipo de relação à Fórmula E. 
+    Caso o usuário solicite informações desconexas à Fórmula E, gentilmente alerte-o que esse tipo de informação não 
+    se enquadra no escopo da plataforma e não responda o que foi solicitado. """
 )
 
 chat_session = model.start_chat(

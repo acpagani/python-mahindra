@@ -1,1 +1,4 @@
 Arthur    |'Não consigo falar com a volt'
+Jorge     |'Não gostei do chat'
+Jorge     |''
+Paulo     |'Nada funciona'
